@@ -1,11 +1,11 @@
-import HeroScene from "./HeroScene";
+import PlanetScene from "./PlanetScene";
 import EncodedRole from "./EncodedRole";
 import CursorLight from "./CursorLight";
 
 function Hero() {
   return (
     <section className="relative min-h-screen overflow-hidden bg-black">
-      <HeroScene />
+      <PlanetScene />
       <CursorLight />
 
       <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-transparent via-black/10 to-black" />
