@@ -1,5 +1,5 @@
-import { Canvas, useFrame } from "@react-three/fiber";
-import { Stars } from "@react-three/drei";
+import { Canvas, useFrame, useThree } from "@react-three/fiber";
+import { Stars, useTexture } from "@react-three/drei";
 import { useMemo, useRef } from "react";
 import * as THREE from "three";
 
@@ -21,17 +21,31 @@ function SceneDrift({ children }) {
 
 function SunOrb() {
   const sunRef = useRef();
+  const { size } = useThree();
+
+  const isMobile = size.width < 640;
+  const isTablet = size.width >= 640 && size.width < 1024;
+
+  const sunPosition = isMobile
+    ? [-1.65, 2.6, -5]
+    : isTablet
+    ? [-3.1, 2.65, -5]
+    : [-4.2, 2.55, -5];
+
+  const sunScale = isMobile ? 0.75 : isTablet ? 0.9 : 1;
 
   useFrame(({ clock }) => {
     const t = clock.elapsedTime;
 
     if (sunRef.current) {
-      sunRef.current.scale.setScalar(1 + Math.sin(t * 1.4) * 0.025);
+      sunRef.current.scale.setScalar(
+        sunScale * (1 + Math.sin(t * 1.4) * 0.025)
+      );
     }
   });
 
   return (
-    <group position={[-4.2, 2.55, -5]}>
+    <group position={sunPosition}>
       <mesh ref={sunRef}>
         <sphereGeometry args={[0.32, 48, 48]} />
         <meshStandardMaterial
@@ -42,8 +56,7 @@ function SunOrb() {
         />
       </mesh>
 
-      {/* soft outer glow */}
-      <mesh scale={1.9}>
+      <mesh scale={1.9 * sunScale}>
         <sphereGeometry args={[0.32, 48, 48]} />
         <meshBasicMaterial
           color="#ff9f1c"
@@ -53,8 +66,7 @@ function SunOrb() {
         />
       </mesh>
 
-      {/* larger halo */}
-      <mesh scale={3.1}>
+      <mesh scale={3.1 * sunScale}>
         <sphereGeometry args={[0.32, 48, 48]} />
         <meshBasicMaterial
           color="#ffd166"
@@ -66,63 +78,155 @@ function SunOrb() {
     </group>
   );
 }
-
 function DistantMars() {
   const marsRef = useRef();
+  const { size } = useThree();
+
+  const isMobile = size.width < 640;
+  const isTablet = size.width >= 640 && size.width < 1024;
+
+  const marsTexture = useTexture("/textures/mars.jpg");
+
+  const basePosition = isMobile
+    ? [1.05, 3.55, -9]
+    : isTablet
+    ? [1.55, 2.65, -9]
+    : [1.15, 3.85, -8];
+
+  const baseScale = isMobile ? 0.08 : isTablet ? 0.1 : 0.12;
 
   useFrame(({ clock }) => {
     const t = clock.elapsedTime;
 
     if (marsRef.current) {
       marsRef.current.rotation.y += 0.001;
-      marsRef.current.position.x = 3.55 + Math.sin(t * 0.05) * 0.06;
-      marsRef.current.position.y = 4.25 + Math.cos(t * 0.04) * 0.035;
+
+      marsRef.current.position.x =
+        basePosition[0] + Math.sin(t * 0.05) * 0.04;
+      marsRef.current.position.y =
+        basePosition[1] + Math.cos(t * 0.04) * 0.025;
     }
   });
 
   return (
-    <mesh ref={marsRef} position={[3.55, 4.45, -9]} scale={0.12}>
-      <sphereGeometry args={[1, 32, 32]} />
+    <mesh ref={marsRef} position={basePosition} scale={baseScale}>
+      <sphereGeometry args={[1, 64, 64]} />
       <meshStandardMaterial
-        color="#d86b32"
-        roughness={0.85}
+        map={marsTexture}
+        roughness={0.9}
         metalness={0.02}
-        emissive="#4a1608"
-        emissiveIntensity={0.55}
+        emissive="#2a0c04"
+        emissiveIntensity={0.18}
       />
     </mesh>
   );
 }
 
 function Earth() {
+  const earthGroupRef = useRef();
   const earthRef = useRef();
+  const cloudsRef = useRef();
+  const outerGlowRef = useRef();
+
+  const { size } = useThree();
+
+  const isMobile = size.width < 640;
+  const isTablet = size.width >= 640 && size.width < 1024;
+
+  const earthTexture = useTexture("/textures/earth.jpg");
+  const cloudsTexture = useTexture("/textures/clouds.jpg");
+
+  earthTexture.colorSpace = THREE.SRGBColorSpace;
+
+  const basePosition = isMobile
+    ? [1.66, 1.2, -7]
+    : isTablet
+    ? [2.7, 1.0, -7]
+    : [3.35, 2.05, -7];
+
+  const baseScale = isMobile ? 0.42 : isTablet ? 0.55 : 0.62;
 
   useFrame(({ clock }) => {
     const t = clock.elapsedTime;
 
+    if (earthGroupRef.current) {
+      earthGroupRef.current.position.x =
+        basePosition[0] + Math.sin(t * 0.09) * 0.12;
+      earthGroupRef.current.position.y =
+        basePosition[1] + Math.cos(t * 0.07) * 0.06;
+    }
+
     if (earthRef.current) {
       earthRef.current.rotation.y += 0.0015;
-      earthRef.current.position.x = 3.8 + Math.sin(t * 0.09) * 0.18;
-      earthRef.current.position.y = 1.55 + Math.cos(t * 0.07) * 0.08;
+    }
+
+    if (cloudsRef.current) {
+      cloudsRef.current.rotation.y += 0.0019;
+    }
+
+    if (outerGlowRef.current) {
+      outerGlowRef.current.scale.setScalar(
+        1.018 + Math.sin(t * 0.6) * 0.002
+      );
     }
   });
 
   return (
-    <mesh ref={earthRef} position={[3.8, 1.55, -7]} scale={0.72}>
-      <sphereGeometry args={[1, 64, 64]} />
-      <meshStandardMaterial
-        color="#7eb6ff"
-        roughness={0.9}
-        metalness={0.05}
-        emissive="#0c2b5a"
-        emissiveIntensity={0.35}
-      />
-    </mesh>
+    <group
+      ref={earthGroupRef}
+      position={basePosition}
+      scale={baseScale}
+    >
+      <mesh ref={earthRef}>
+        <sphereGeometry args={[1, 128, 128]} />
+        <meshStandardMaterial
+          map={earthTexture}
+          roughness={0.38}
+          metalness={0.02}
+          emissive="#0c4a8a"
+          emissiveIntensity={0.5}
+        />
+      </mesh>
+
+      <mesh ref={cloudsRef} scale={1.015}>
+        <sphereGeometry args={[1, 128, 128]} />
+        <meshStandardMaterial
+          color="#ffffff"
+          alphaMap={cloudsTexture}
+          transparent
+          opacity={1}
+          roughness={0.23}
+          metalness={0}
+          emissive="#d9f1ff"
+          emissiveIntensity={0.32}
+          depthWrite={false}
+        />
+      </mesh>
+
+      <mesh ref={outerGlowRef} scale={1.018}>
+        <sphereGeometry args={[1, 128, 128]} />
+        <meshBasicMaterial
+          color="#4aa3ff"
+          transparent
+          opacity={0.18}
+          blending={THREE.AdditiveBlending}
+          side={THREE.BackSide}
+          depthWrite={false}
+        />
+      </mesh>
+    </group>
   );
 }
 
+
 function MoonTerrain() {
   const meshRef = useRef();
+  const moonTexture = useTexture("/textures/moon-foreground.png");
+
+  moonTexture.colorSpace = THREE.SRGBColorSpace;
+  moonTexture.wrapS = THREE.RepeatWrapping;
+  moonTexture.wrapT = THREE.RepeatWrapping;
+  moonTexture.repeat.set(4, 2);
 
   const geometry = useMemo(() => {
     const geo = new THREE.PlaneGeometry(26, 10, 180, 80);
@@ -174,7 +278,12 @@ function MoonTerrain() {
       rotation={[-1.28, 0, 0]}
       position={[0, -2.55, -1.4]}
     >
-      <meshStandardMaterial color="#8f8c88" roughness={1} metalness={0.02} />
+      <meshStandardMaterial
+        map={moonTexture}
+        color="#b8b3aa"
+        roughness={1}
+        metalness={0}
+      />
     </mesh>
   );
 }
@@ -187,14 +296,12 @@ function PlanetScene() {
 
         <ambientLight intensity={0.12} />
 
-        {/* Main sunlight direction from upper-left */}
         <directionalLight
           position={[-6, 5, 4]}
           intensity={3.6}
           color="#fff2cc"
         />
 
-        {/* Warm sun light */}
         <pointLight
           position={[-4.2, 2.55, -3]}
           intensity={7}
@@ -202,9 +309,14 @@ function PlanetScene() {
           color="#ffb347"
         />
 
-        {/* Cool fill light so shadows are not fully dead */}
         <pointLight position={[3, 1, 2]} intensity={1.1} color="#7db7ff" />
 
+        <pointLight
+          position={[4.8, 2.2, -4]}
+          intensity={1.8}
+          distance={5}
+          color="#4aa3ff"
+        />
         <Stars
           radius={140}
           depth={70}
@@ -215,11 +327,10 @@ function PlanetScene() {
           speed={0.25}
         />
 
-        <SceneDrift>
+         <SceneDrift>
           <SunOrb />
           <DistantMars />
           <Earth />
-          <MoonTerrain />
         </SceneDrift>
       </Canvas>
 
