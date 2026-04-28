@@ -2,11 +2,18 @@ import PlanetScene from "./PlanetScene";
 import MoonForeground from "./MoonForeground";
 import EncodedRole from "./EncodedRole";
 import CursorLight from "./CursorLight";
+import TwinklingStars from "./TwinklingStars";
+import ShootingStar from "./ShootingStar";
+import SunOverlay from "./SunOverlay";
+import EncryptedName from "./EncryptedName";
 
 function Hero() {
   return (
     <section className="relative min-h-[100svh] overflow-hidden bg-black">
       <PlanetScene />
+      <SunOverlay />
+      <TwinklingStars />
+      <ShootingStar />
       <CursorLight />
       <MoonForeground />
 
@@ -32,11 +39,7 @@ function Hero() {
             Mission Control // CABBOTDEV
           </p>
 
-          <h1 className="max-w-3xl text-[clamp(3.4rem,8vw,6.5rem)] font-black leading-[0.9] tracking-tight text-white">
-            Christian
-            <br />
-            <span className="text-blue-300">Abbot</span>
-          </h1>
+          <EncryptedName />
 
           <div className="mt-5">
             <EncodedRole />
@@ -52,14 +55,14 @@ function Hero() {
               href="#projects"
               className="rounded-full bg-blue-500 px-7 py-3 text-center font-semibold text-white shadow-lg shadow-blue-500/30 transition hover:bg-blue-400"
             >
-              Explore Projects
+              View Projects
             </a>
-
+            
             <a
               href="#contact"
               className="rounded-full border border-blue-300/40 px-7 py-3 text-center font-semibold text-blue-100 transition hover:bg-blue-400/10"
             >
-              Send a Message
+              Contact Me
             </a>
           </div>
         </div>

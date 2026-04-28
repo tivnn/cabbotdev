@@ -19,65 +19,7 @@ function SceneDrift({ children }) {
   return <group ref={groupRef}>{children}</group>;
 }
 
-function SunOrb() {
-  const sunRef = useRef();
-  const { size } = useThree();
 
-  const isMobile = size.width < 640;
-  const isTablet = size.width >= 640 && size.width < 1024;
-
-  const sunPosition = isMobile
-    ? [-1.65, 2.6, -5]
-    : isTablet
-    ? [-3.1, 2.65, -5]
-    : [-4.2, 2.55, -5];
-
-  const sunScale = isMobile ? 0.75 : isTablet ? 0.9 : 1;
-
-  useFrame(({ clock }) => {
-    const t = clock.elapsedTime;
-
-    if (sunRef.current) {
-      sunRef.current.scale.setScalar(
-        sunScale * (1 + Math.sin(t * 1.4) * 0.025)
-      );
-    }
-  });
-
-  return (
-    <group position={sunPosition}>
-      <mesh ref={sunRef}>
-        <sphereGeometry args={[0.32, 48, 48]} />
-        <meshStandardMaterial
-          color="#ffb84d"
-          emissive="#ff8a00"
-          emissiveIntensity={3.5}
-          roughness={0.35}
-        />
-      </mesh>
-
-      <mesh scale={1.9 * sunScale}>
-        <sphereGeometry args={[0.32, 48, 48]} />
-        <meshBasicMaterial
-          color="#ff9f1c"
-          transparent
-          opacity={0.18}
-          blending={THREE.AdditiveBlending}
-        />
-      </mesh>
-
-      <mesh scale={3.1 * sunScale}>
-        <sphereGeometry args={[0.32, 48, 48]} />
-        <meshBasicMaterial
-          color="#ffd166"
-          transparent
-          opacity={0.08}
-          blending={THREE.AdditiveBlending}
-        />
-      </mesh>
-    </group>
-  );
-}
 function DistantMars() {
   const marsRef = useRef();
   const { size } = useThree();
@@ -88,7 +30,7 @@ function DistantMars() {
   const marsTexture = useTexture("/textures/mars.jpg");
 
   const basePosition = isMobile
-    ? [1.05, 3.55, -9]
+    ? [1.05, 3.8, -9]
     : isTablet
     ? [1.55, 2.65, -9]
     : [1.15, 3.85, -8];
@@ -139,12 +81,47 @@ function Earth() {
   earthTexture.colorSpace = THREE.SRGBColorSpace;
 
   const basePosition = isMobile
-    ? [1.66, 1.2, -7]
+    ? [1.8, 1.2, -7]
     : isTablet
     ? [2.7, 1.0, -7]
     : [3.35, 2.05, -7];
 
   const baseScale = isMobile ? 0.42 : isTablet ? 0.55 : 0.62;
+
+  const nightShadowMaterial = useMemo(() => {
+    return new THREE.ShaderMaterial({
+      transparent: true,
+      depthWrite: false,
+      blending: THREE.NormalBlending,
+      uniforms: {
+        opacity: { value: 0.58 },
+      },
+      vertexShader: `
+        varying vec2 vUv;
+
+        void main() {
+          vUv = uv;
+          gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+        }
+      `,
+      fragmentShader: `
+        varying vec2 vUv;
+        uniform float opacity;
+
+        void main() {
+          float dist = distance(vUv, vec2(0.5, 0.5));
+          float circleMask = 1.0 - smoothstep(0.47, 0.51, dist);
+
+          float rightShadow = smoothstep(0.45, 0.82, vUv.x);
+          float edgeFade = smoothstep(0.05, 0.18, vUv.y) * (1.0 - smoothstep(0.88, 1.0, vUv.y));
+
+          float alpha = rightShadow * circleMask * edgeFade * opacity;
+
+          gl_FragColor = vec4(0.0, 0.015, 0.04, alpha);
+        }
+      `,
+    });
+  }, []);
 
   useFrame(({ clock }) => {
     const t = clock.elapsedTime;
@@ -172,43 +149,47 @@ function Earth() {
   });
 
   return (
-    <group
-      ref={earthGroupRef}
-      position={basePosition}
-      scale={baseScale}
-    >
+    <group ref={earthGroupRef} position={basePosition} scale={baseScale}>
+      {/* Earth surface */}
       <mesh ref={earthRef}>
         <sphereGeometry args={[1, 128, 128]} />
         <meshStandardMaterial
           map={earthTexture}
-          roughness={0.38}
+          roughness={0.42}
           metalness={0.02}
-          emissive="#0c4a8a"
-          emissiveIntensity={0.5}
+          emissive="#08366d"
+          emissiveIntensity={0.38}
         />
       </mesh>
 
+      {/* Cloud layer */}
       <mesh ref={cloudsRef} scale={1.015}>
         <sphereGeometry args={[1, 128, 128]} />
         <meshStandardMaterial
           color="#ffffff"
           alphaMap={cloudsTexture}
           transparent
-          opacity={1}
-          roughness={0.23}
+          opacity={0.95}
+          roughness={0.3}
           metalness={0}
           emissive="#d9f1ff"
-          emissiveIntensity={0.32}
+          emissiveIntensity={0.22}
           depthWrite={false}
         />
       </mesh>
 
+      {/* Right-side night shadow */}
+      <mesh position={[0, 0, 1.04]} material={nightShadowMaterial}>
+        <circleGeometry args={[1.04, 128]} />
+      </mesh>
+
+      {/* Thin atmosphere rim */}
       <mesh ref={outerGlowRef} scale={1.018}>
         <sphereGeometry args={[1, 128, 128]} />
         <meshBasicMaterial
           color="#4aa3ff"
           transparent
-          opacity={0.18}
+          opacity={0.16}
           blending={THREE.AdditiveBlending}
           side={THREE.BackSide}
           depthWrite={false}
@@ -217,7 +198,6 @@ function Earth() {
     </group>
   );
 }
-
 
 function MoonTerrain() {
   const meshRef = useRef();
@@ -288,6 +268,159 @@ function MoonTerrain() {
   );
 }
 
+function Comet() {
+  const headRef = useRef();
+  const glowRef = useRef();
+  const trailRefs = useRef([]);
+
+  const cometState = useRef({
+    active: false,
+    startTime: 0,
+    duration: 2.8,
+    nextSpawn: 4,
+    start: new THREE.Vector3(-11, 3.8, -6),
+    end: new THREE.Vector3(11, 1.8, -6),
+  });
+
+  useFrame(({ clock }) => {
+    const t = clock.elapsedTime;
+    const state = cometState.current;
+
+    if (!headRef.current || !glowRef.current) return;
+
+    if (!state.active) {
+      if (t >= state.nextSpawn) {
+        state.active = true;
+        state.startTime = t;
+        state.duration = 2.4 + Math.random() * 1.1;
+
+        state.start.set(
+          -11,
+          3.2 + Math.random() * 2.2,
+          -6.2 + Math.random() * 0.5
+        );
+
+        state.end.set(
+          11,
+          1.4 + Math.random() * 2.0,
+          -6.2 + Math.random() * 0.5
+        );
+
+        headRef.current.visible = true;
+        glowRef.current.visible = true;
+
+        trailRefs.current.forEach((trail) => {
+          if (trail) trail.visible = true;
+        });
+      } else {
+        headRef.current.visible = false;
+        glowRef.current.visible = false;
+
+        trailRefs.current.forEach((trail) => {
+          if (trail) trail.visible = false;
+        });
+
+        return;
+      }
+    }
+
+    let progress = (t - state.startTime) / state.duration;
+
+    if (progress >= 1) {
+      state.active = false;
+      state.nextSpawn = t + 7 + Math.random() * 8;
+
+      headRef.current.visible = false;
+      glowRef.current.visible = false;
+
+      trailRefs.current.forEach((trail) => {
+        if (trail) trail.visible = false;
+      });
+
+      return;
+    }
+
+    progress = THREE.MathUtils.smoothstep(progress, 0, 1);
+
+    const currentPos = new THREE.Vector3().lerpVectors(
+      state.start,
+      state.end,
+      progress
+    );
+
+    headRef.current.position.copy(currentPos);
+    glowRef.current.position.copy(currentPos);
+
+    const pulse = 1 + Math.sin(t * 18) * 0.08;
+    headRef.current.scale.setScalar(1 * pulse);
+    glowRef.current.scale.setScalar(1.35 * pulse);
+
+    trailRefs.current.forEach((trail, i) => {
+      if (!trail) return;
+
+      const lag = (i + 1) * 0.035;
+      const trailProgress = Math.max(0, progress - lag);
+
+      const trailPos = new THREE.Vector3().lerpVectors(
+        state.start,
+        state.end,
+        trailProgress
+      );
+
+      trail.position.copy(trailPos);
+
+      const size = 1 - i * 0.09;
+      trail.scale.setScalar(Math.max(0.25, size));
+
+      if (trail.material) {
+        trail.material.opacity = Math.max(0.02, 0.22 - i * 0.025);
+      }
+    });
+  });
+
+  return (
+    <group>
+      {/* comet head */}
+      <mesh ref={headRef} visible={false}>
+        <sphereGeometry args={[0.07, 20, 20]} />
+        <meshBasicMaterial color="#fff7c2" toneMapped={false} />
+      </mesh>
+
+      {/* comet glow */}
+      <mesh ref={glowRef} visible={false}>
+        <sphereGeometry args={[0.13, 20, 20]} />
+        <meshBasicMaterial
+          color="#ffcc66"
+          transparent
+          opacity={0.32}
+          blending={THREE.AdditiveBlending}
+          toneMapped={false}
+          depthWrite={false}
+        />
+      </mesh>
+
+      {/* comet tail */}
+      {Array.from({ length: 7 }).map((_, i) => (
+        <mesh
+          key={i}
+          ref={(el) => (trailRefs.current[i] = el)}
+          visible={false}
+        >
+          <sphereGeometry args={[0.09, 16, 16]} />
+          <meshBasicMaterial
+            color="#ffb347"
+            transparent
+            opacity={0.15}
+            blending={THREE.AdditiveBlending}
+            toneMapped={false}
+            depthWrite={false}
+          />
+        </mesh>
+      ))}
+    </group>
+  );
+}
+
 function PlanetScene() {
   return (
     <div className="absolute inset-0 z-0">
@@ -318,27 +451,29 @@ function PlanetScene() {
           color="#4aa3ff"
         />
         <Stars
-          radius={140}
-          depth={70}
-          count={4300}
-          factor={3.2}
+          radius={160}
+          depth={90}
+          count={8000}
+          factor={3.5}
           saturation={0}
           fade
-          speed={0.25}
+          speed={0.20}
         />
 
          <SceneDrift>
-          <SunOrb />
           <DistantMars />
           <Earth />
         </SceneDrift>
       </Canvas>
+      
+
+      
 
       {/* Cinematic sunlight + darkness overlay */}
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_7%_8%,rgba(255,184,77,0.38),transparent_17%),radial-gradient(circle_at_14%_18%,rgba(255,209,102,0.18),transparent_28%),radial-gradient(circle_at_24%_28%,rgba(96,165,250,0.12),transparent_34%),linear-gradient(to_bottom,transparent_0%,rgba(0,0,0,0.1)_48%,rgba(0,0,0,0.5)_78%,black_100%)]" />
+     <div className="absolute inset-0 bg-[radial-gradient(circle_at_24%_28%,rgba(96,165,250,0.08),transparent_34%),linear-gradient(to_bottom,transparent_0%,rgba(0,0,0,0.08)_48%,rgba(0,0,0,0.45)_78%,black_100%)]" />
 
       {/* subtle yellow/orange beam across the scene */}
-      <div className="absolute inset-0 opacity-40 bg-[linear-gradient(120deg,rgba(255,183,77,0.24)_0%,rgba(255,183,77,0.08)_18%,transparent_45%)]" />
+      <div className="absolute inset-0 opacity-20 bg-[linear-gradient(120deg,rgba(255,183,77,0.14)_0%,rgba(255,183,77,0.05)_18%,transparent_45%)]" />
     </div>
   );
 }

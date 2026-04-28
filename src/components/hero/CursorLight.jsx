@@ -22,7 +22,7 @@ function CursorLight() {
     <div
       className="pointer-events-none fixed inset-0 z-10 transition-opacity duration-300"
       style={{
-        background: `radial-gradient(520px circle at ${position.x}px ${position.y}px, rgba(255, 184, 77, 0.18), rgba(255, 138, 0, 0.08) 28%, transparent 55%)`,
+        background: `radial-gradient(40px circle at ${position.x}px ${position.y}px, rgba(255, 184, 77, 0.18), rgba(255, 138, 0, 0.08) 32%, transparent 68%)`,
       }}
     />
   );
