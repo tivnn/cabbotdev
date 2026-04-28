@@ -103,7 +103,7 @@ function Profile() {
             className="max-w-3xl"
           >
             <h2 className="text-4xl font-black tracking-tight text-white sm:text-5xl lg:text-6xl">
-              Hi, I am Christian Abbot
+              Hi, I'm Christian Abbot
             </h2>
 
             <div className="mt-8 space-y-6 text-base leading-8 text-slate-300 sm:text-lg">

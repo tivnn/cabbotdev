@@ -1,4 +1,6 @@
 import { motion } from "framer-motion";
+import TwinklingStars from "../hero/TwinklingStars";
+import ShootingStar from "../hero/ShootingStar";
 
 function Footer() {
   return (
@@ -6,10 +8,21 @@ function Footer() {
       id="contact"
       className="relative overflow-hidden bg-black px-6 py-28 text-white sm:px-10 md:px-16 lg:px-24"
     >
-      {/* Background */}
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_20%,rgba(239,68,68,0.12),transparent_30%),radial-gradient(circle_at_20%_80%,rgba(59,130,246,0.10),transparent_30%)]" />
-      <div className="pointer-events-none absolute inset-0 opacity-30 bg-[radial-gradient(circle,rgba(255,255,255,0.35)_1px,transparent_1px)] [background-size:120px_120px]" />
+      {/* stars Layer (denser than hero) */}
+      <div className="pointer-events-none absolute inset-0 z-0 opacity-80">
+        <TwinklingStars density={1800} />
+      </div>
 
+      {/* comet / shooting stars */}
+      <div className="pointer-events-none absolute inset-0 z-0">
+        <ShootingStar delay={0} />
+        <ShootingStar delay={3} />
+      </div>
+
+      {/* 🔴 subtle ambient glow */}
+      <div className="pointer-events-none absolute inset-0 z-0 bg-[radial-gradient(circle_at_50%_20%,rgba(239,68,68,0.12),transparent_40%)]" />
+
+      {/* content */}
       <motion.div
         initial={{ opacity: 0, y: 45, filter: "brightness(0.4)" }}
         whileInView={{ opacity: 1, y: 0, filter: "brightness(1)" }}
@@ -30,7 +43,7 @@ function Footer() {
           more about my work.
         </p>
 
-        {/* Resume button */}
+        {/* resume download */}
         <div className="mt-10">
           <a
             href="/resume-cabbot.pdf"
@@ -41,60 +54,57 @@ function Footer() {
           </a>
         </div>
 
-        {/* Contact info */}
+        {/* contact cards */}
         <div className="mx-auto mt-12 grid max-w-3xl gap-4 text-left sm:grid-cols-2">
-          <div className="rounded-2xl border border-white/10 bg-white/[0.035] p-5 backdrop-blur-sm">
-            <p className="text-xs uppercase tracking-[0.3em] text-slate-500">
-              Phone
-            </p>
-            <p className="mt-2 text-lg font-semibold text-white">
-              +1 (562) 551-4719
-            </p>
-          </div>
-
-          <div className="rounded-2xl border border-white/10 bg-white/[0.035] p-5 backdrop-blur-sm">
-            <p className="text-xs uppercase tracking-[0.3em] text-slate-500">
-              Email
-            </p>
-            <a
-              href="mailto:coabbot@cpp.edu"
-              className="mt-2 inline-block text-lg font-semibold text-blue-300 transition hover:text-blue-200"
+          {[
+            {
+              label: "Phone",
+              value: "+1 (562) 551-4719",
+            },
+            {
+              label: "Email",
+              value: "coabbot@cpp.edu",
+              link: "mailto:coabbot@cpp.edu",
+            },
+            {
+              label: "LinkedIn",
+              value: "tivvn",
+              link: "https://www.linkedin.com/in/tivvn",
+            },
+            {
+              label: "GitHub",
+              value: "tivnn",
+              link: "https://github.com/tivnn",
+            },
+          ].map((item, i) => (
+            <div
+              key={i}
+              className="group rounded-2xl border border-white/10 bg-white/[0.035] p-5 backdrop-blur-sm transition hover:border-white/20 hover:bg-white/[0.06]"
             >
-              coabbot@cpp.edu
-            </a>
-          </div>
+              <p className="text-xs uppercase tracking-[0.3em] text-slate-500">
+                {item.label}
+              </p>
 
-          <div className="rounded-2xl border border-white/10 bg-white/[0.035] p-5 backdrop-blur-sm">
-            <p className="text-xs uppercase tracking-[0.3em] text-slate-500">
-              LinkedIn
-            </p>
-            <a
-              href="https://www.linkedin.com/in/tivvn"
-              target="_blank"
-              rel="noreferrer"
-              className="mt-2 inline-block text-lg font-semibold text-blue-300 transition hover:text-blue-200"
-            >
-              tivvn
-            </a>
-          </div>
-
-          <div className="rounded-2xl border border-white/10 bg-white/[0.035] p-5 backdrop-blur-sm">
-            <p className="text-xs uppercase tracking-[0.3em] text-slate-500">
-              GitHub
-            </p>
-            <a
-              href="https://github.com/tivnn"
-              target="_blank"
-              rel="noreferrer"
-              className="mt-2 inline-block text-lg font-semibold text-blue-300 transition hover:text-blue-200"
-            >
-              tivnn
-            </a>
-          </div>
+              {item.link ? (
+                <a
+                  href={item.link}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="mt-2 inline-block text-lg font-semibold text-blue-300 transition group-hover:text-blue-200"
+                >
+                  {item.value}
+                </a>
+              ) : (
+                <p className="mt-2 text-lg font-semibold text-white">
+                  {item.value}
+                </p>
+              )}
+            </div>
+          ))}
         </div>
 
         <p className="mt-14 text-sm text-slate-600">
-          Built by Christian O. Abbot.
+          Built by Christian Abbot.
         </p>
       </motion.div>
     </footer>
