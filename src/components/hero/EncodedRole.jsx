@@ -45,20 +45,22 @@ export default function EncodedRole() {
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
       className="
-        pointer-events-auto
-        bg-transparent
-        px-0 py-1
-        font-mono
-        text-lg
-        font-bold
-        uppercase
-        tracking-[0.3em]
-        text-lime-400
-        drop-shadow-[0_0_8px_rgba(163,255,0,0.6)]
-        transition duration-200
-        hover:text-lime-300
-      "
-    >
+      pointer-events-auto
+      bg-transparent
+      px-0 py-1
+      font-['DigitalNormal']
+      text-xl
+      font-normal
+      uppercase
+      tracking-[0.35em]
+      text-lime-400
+      drop-shadow-[0_0_8px_rgba(163,255,0,0.6)]
+      transition duration-200
+      hover:text-lime-300
+      sm:text-2xl
+      sm:tracking-[0.42em]
+     "
+      >
       {displayText}
     </button>
   );

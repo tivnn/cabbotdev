@@ -1,5 +1,12 @@
 @import "tailwindcss";
 
+@font-face {
+  font-family: "DigitalNormal";
+  src: url("./assets/fonts/DigitalNormal-xO6j.otf") format("opentype");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
 html {
   scroll-behavior: smooth;
 }

@@ -43,7 +43,7 @@ function Hero() {
       </nav>
 
       {/* Mobile hamburger */}
-      <div className="absolute right-5 top-5 z-50 md:hidden">
+      <div className="fixed right-5 top-5 z-[999] md:hidden">
         <button
           type="button"
           onClick={() => setIsMenuOpen((prev) => !prev)}
