@@ -127,6 +127,10 @@ function Hero() {
             >
               Contact Me
             </a>
+
+            <p className="absolute bottom-6 right-6 z-20 text-xs text-white/40">
+              © 2026 Portfolio. All rights reserved.
+            </p>
           </div>
         </div>
       </div>
