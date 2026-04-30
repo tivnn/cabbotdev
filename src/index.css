@@ -5,7 +5,7 @@
   src: url("./assets/fonts/DigitalNormal-xO6j.otf") format("opentype");
   font-weight: normal;
   font-style: normal;
-  font-display: swap;
+  font-display: block;
 }
 html {
   scroll-behavior: smooth;
@@ -15,7 +15,7 @@ body {
   margin: 0;
   background: #020617;
   color: white;
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, Arial, sans-serif;
 }
 @keyframes twinkle {
   0%,
